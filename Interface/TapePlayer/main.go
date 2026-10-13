@@ -14,6 +14,11 @@ func (t TapePlayer) Stop () {
 func PlayList (device Playable, songs []string) {
 	for _, song := range songs {
 		device.Play(song)
+		// device.record(song) // cannot use device (variable of type Playable) as TapeRecorder value in argument to device.record
+		// device.(TapeRecorder).Record(song) // type assertion to access Record method
+		if recorder, ok := device.(TapeRecorder); ok { // type assertion to access Record method
+			recorder.Record(song)
+		}
 	}
 	device.Stop()
 }
@@ -28,10 +33,13 @@ func (t TapeRecorder) Stop() {
 	fmt.Println("Stopping Tape Recorder ~~~~")
 }
 
+func (t TapeRecorder) Record (song string) {
+	fmt.Println("Recording Song: ", song)
+}
+
 type Playable interface {
 	Play(song string)
 	Stop()
-
 }
 
 func main () {
