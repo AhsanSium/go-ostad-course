@@ -12,21 +12,33 @@ var mu sync.Mutex // Mutex is a mutual exclusion lock. It is used to protect sha
 
 func main () {
 	fmt.Println("Hello Go, Learning Concurrency and Race Condition")
-	var wg sync.WaitGroup
-	wg.Add(2) // Add 2 to the wait group counter
-	go increment(&wg) 
-	go increment(&wg)
-	wg.Wait() // Until wg is zero
+	// var wg sync.WaitGroup
+	// wg.Add(2) // Add 2 to the wait group counter
+
+	// ch := make(chan bool) // Unbuffered channel
+	ch := make(chan bool, 2) // Buffered channel with a capacity of 2 works like asynchronously.
+
+	// go increment(&wg) 
+	// go increment(&wg)
+	go increment(ch) 
+	go increment(ch)
+	// wg.Wait() // Until wg is zero
 	// Wait group
 
+	// Wait for the goroutines to complete
+	fmt.Println(<-ch)
+	fmt.Println(<-ch)
+	
 	fmt.Println("Counter:", counter)
 }
 
-func increment (wg *sync.WaitGroup) {
-	defer wg.Done() // wg = wg - 1
+// func increment (wg *sync.WaitGroup) {
+func increment (ch chan bool) {
+	// defer wg.Done() // wg = wg - 1
 	for range 1000 {
 		mu.Lock() // Lock the mutex to prevent other goroutines
 		counter++
 		mu.Unlock() // Unlock the mutex to allow other goroutines to access the counter
 	}
+	ch <- true // Send a value to the channel to indicate that the goroutine has completed its work. This allows the main goroutine to wait for the new goroutine to finish before exiting the program.
 }
